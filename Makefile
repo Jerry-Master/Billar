@@ -14,4 +14,4 @@ $(ODIR)/%.o: $(IDIR)/%.cpp $(LDIR)/%.hpp
 	$(CXX) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -rf *.exe *.o
+	rm -rf *.exe *.o $(ODIR)/*.o
