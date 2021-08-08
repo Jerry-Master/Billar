@@ -3,6 +3,8 @@
 #include <cmath>
 #include <iostream>
 #include <vector>
+#include <list>
+#include <cassert>
 using namespace std;
 
 const double EPS = 1e-6;

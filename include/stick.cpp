@@ -1,11 +1,10 @@
 #include "stick.hpp"
-#include <iostream>
 using namespace std;
 
 Stick::Stick(const sf::Texture& texture1, const sf::Texture& texture2, 
              const sf::Texture& texture3, const sf::Texture& texture4,
              double length_, double width_, double window_width_,
-             double window_height_){
+             double window_height_, double radius_){
 
     length = length_;
     width = width_;
@@ -17,11 +16,16 @@ Stick::Stick(const sf::Texture& texture1, const sf::Texture& texture2,
     shaft = trapezium(texture2, 0.5*width, 0.3*width, 0.48*length);
     butt = trapezium(texture3, width, 0.5*width, 0.48*length);
     bumper = trapezium(texture4, 0.7*width, width, 0.02*length);
-    sf::Vector2f offset(window_width / 2, window_height/2);
+    offset = sf::Vector2f(window_width / 2, window_height/2);
     v1 = sf::Vector2f(0.2*width, -0.02*length);
     v2 = sf::Vector2f(0.1*width, -0.5*length);
     v3 = sf::Vector2f(-0.15*width, -0.98*length);
     v4 = sf::Vector2f(0, -length);
+
+    radius = radius_;
+}
+
+void Stick::draw(sf::RenderWindow& window){
     tip.setPosition(offset + rotateV(v1,90));
     tip.setRotation(90);
     shaft.setPosition(offset + rotateV(v2,90));
@@ -30,9 +34,7 @@ Stick::Stick(const sf::Texture& texture1, const sf::Texture& texture2,
     butt.setRotation(90);
     bumper.setPosition(offset + rotateV(v4,90));
     bumper.setRotation(90);
-}
 
-void Stick::draw(sf::RenderWindow& window){
     view.setRotation(angle);
     window.setView(view);
     window.draw(tip);
@@ -43,16 +45,8 @@ void Stick::draw(sf::RenderWindow& window){
 }
 
 void Stick::move(double x, double y){
-    view.setCenter(rotateV(sf::Vector2f(-x+window_width / 2,-y+window_height/2),angle)+sf::Vector2f(window_width / 2,window_height/2));
-    sf::Vector2f offset(window_width / 2, window_height/2);
-    tip.setPosition(offset + rotateV(v1,90));
-    tip.setRotation(90);
-    shaft.setPosition(offset + rotateV(v2,90));
-    shaft.setRotation(90);
-    butt.setPosition(offset + rotateV(v3,90));
-    butt.setRotation(90);
-    bumper.setPosition(offset + rotateV(v4,90));
-    bumper.setRotation(90);
+    view.setCenter(actualCoords(x,y));
+    offset = sf::Vector2f(window_width / 2 + radius, window_height/2 - 0.35*width);
 }
 void Stick::move(sf::Vector2f pos){
     this->move(pos.x, pos.y);
@@ -64,21 +58,15 @@ void Stick::rotate(double x, double y, sf::Vector2f ball){
     if ((v.x < 0 and v.y > 0) or (v.x < 0 and v.y < 0)){
         angle += 180;
     }
-    view.setCenter(rotateV(sf::Vector2f(-x+window_width / 2,-y+window_height/2),angle)+sf::Vector2f(window_width / 2,window_height/2));
+    view.setCenter(actualCoords(ball.x,
+                                ball.y));
+    offset = sf::Vector2f(window_width / 2 + radius, window_height/2 - 0.35*width);
 }
 void Stick::rotate(sf::Vector2f pos, sf::Vector2f ball){
     this->rotate(pos.x, pos.y, ball);
 }
 
 void Stick::charge(double x, double y, double time){
-    view.setCenter(rotateV(sf::Vector2f(-x+window_width / 2,-y+window_height/2),angle)+sf::Vector2f(window_width / 2,window_height/2));
-    sf::Vector2f offset(window_width / 2+time, window_height/2);
-    tip.setPosition(offset + rotateV(v1,90));
-    tip.setRotation(90);
-    shaft.setPosition(offset + rotateV(v2,90));
-    shaft.setRotation(90);
-    butt.setPosition(offset + rotateV(v3,90));
-    butt.setRotation(90);
-    bumper.setPosition(offset + rotateV(v4,90));
-    bumper.setRotation(90);
+    view.setCenter(actualCoords(x,y));
+    offset = sf::Vector2f(window_width / 2+time + radius, window_height/2 - 0.35*width);
 }

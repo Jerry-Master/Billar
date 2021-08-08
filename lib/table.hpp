@@ -22,4 +22,6 @@ class Table{
 
         void draw(sf::RenderWindow& window);
 
+        bool entered_hole(sf::Vector2f pos, double rad);
+
 };

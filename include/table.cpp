@@ -74,3 +74,13 @@ void Table::draw(sf::RenderWindow& window){
     window.draw(cor_tm);
     window.draw(cor_bm);
 }
+
+bool Table::entered_hole(sf::Vector2f pos, double rad){
+    if (cor_tl.isInside(pos, rad)) return true;
+    if (cor_tr.isInside(pos, rad)) return true;
+    if (cor_bl.isInside(pos, rad)) return true;
+    if (cor_br.isInside(pos, rad)) return true;
+    if (cor_tm.isInside(pos + sf::Vector2f(0,-10), rad)) return true;
+    if (cor_bm.isInside(pos + sf::Vector2f(0,10), rad)) return true;
+    return false;
+}

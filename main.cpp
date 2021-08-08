@@ -6,8 +6,9 @@ using namespace std;
 
 const int WIDTH = 2000;
 const int HEIGHT = 1300;
+const vector<int> order = {6,15,13,3,12,9,7,14,4,2,8,10,11,5,1};
     
-using Balls = vector<Ball>;
+using Balls = list<Ball>;
 
 int main(){
     // create the window
@@ -30,18 +31,27 @@ int main(){
                      cloth_width, cloth_height, WIDTH, HEIGHT);
     bool move=false, rotate=false, charge=false, init_charge=false;
 
-    Stick stick(texture1, texture2, texture3, texture4, 1000, 30, WIDTH, HEIGHT);
+    double rad = 25;
+    Stick stick(texture1, texture2, texture3, texture4, 1000, 30, WIDTH, HEIGHT, rad);
 
-    Balls balls(22);
+    Balls balls(16);
+    vector<sf::Texture> textures(16);
     int cont = 0;
-    double rad = 20;
-    for (int j = 0; j <= 5; j++){
-        for (int i = 0; i <= 5-j; i++){
-            balls[cont++] = Ball(rad, 500 + rad*2*j * 0.866, 
+    list<Ball>::iterator it = balls.begin();
+    for (int j = 0; j <= 4; j++){
+        for (int i = 0; i <= 4-j; i++){
+            Ball new_ball = Ball(rad, 500 + rad*2*j * 0.866, 
                                  650 - 6*rad + rad*2*i + rad*2*j * 0.5);
+            textures[cont].loadFromFile("images/balls/"+ to_string(order[cont]) + ".jpg");
+            new_ball.addTexture(&textures[cont]);
+            *it = new_ball;
+            cont++; it++;
         }
     }
-    balls[cont] = Ball(rad, 1300, 650-rad);
+    Ball new_ball = Ball(rad, 1300, 650-rad);
+    new_ball.addTexture(&texture2);
+    *it = new_ball;
+
     int time = 0;
     double size_ = 0;
     // run the program as long as the window is open
@@ -60,7 +70,11 @@ int main(){
             if (sf::Mouse::isButtonPressed(sf::Mouse::Right)){ 
                 charge = true;
             }
-            if (event.type == sf::Event::MouseButtonReleased){
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)){
+                charge = true;
+            }
+            if (event.type == sf::Event::MouseButtonReleased or 
+                event.type == sf::Event::KeyReleased){
                 if (charge) init_charge = true;
                 move = rotate = charge = false;
             }
@@ -72,39 +86,51 @@ int main(){
         // draw everything here...
         sf::Vector2i mousePos = sf::Mouse::getPosition(window);
         if (move){
-            stick.move(mousePos.x, mousePos.y);
+            stick.move(balls.back().getPos().x, balls.back().getPos().y);
         }
         if (rotate){
-            stick.rotate(mousePos.x, mousePos.y, balls[21].getPos());
+            stick.rotate(mousePos.x, mousePos.y, balls.back().getPos());
         }
         if (charge){
-            stick.charge(mousePos.x, mousePos.y, time++);
+            stick.charge(balls.back().getPos().x, balls.back().getPos().y, time++);
             size_ = time;
         } else if (init_charge){
-            stick.charge(mousePos.x, mousePos.y, time);
+            stick.charge(balls.back().getPos().x, balls.back().getPos().y, time);
             time -= 10;
             if (time < 0) {
                 init_charge = false;
-                balls[21].setVel(resize(balls[21].getPos() - sf::Vector2f(mousePos.x,mousePos.y), size_/5));
+                balls.back().setVel(resize(balls.back().getPos() - sf::Vector2f(mousePos.x,mousePos.y), size_ * 0.3));
             }
         }
         pool_table.draw(window);
-        stick.draw(window);
         vector<sf::Vector2f> prev_pos(balls.size());
-        for (int i = 0; i < balls.size(); i++){
-            prev_pos[i] = balls[i].getPos();
-            balls[i].update();
-            balls[i].draw(window);
+        int i = 0;
+        for (it = balls.begin(); it != balls.end(); ++it){
+            prev_pos[i] = it->getPos();
+            it->update();
+            it->draw(window);
+            i++;
         }
-        for (int i = 0; i < balls.size(); i++){
-            for (int j = i+1; j < balls.size(); j++){
-                if (balls[i].collides(balls[j])){
-                    balls[i].reflectCollision(balls[j], prev_pos[i], prev_pos[j]);
+        stick.draw(window);
+
+        // end the current frame
+        window.display();
+
+        // Compute collisions
+        i = 0;
+        for (it = balls.begin(); it != balls.end(); ++it){
+            int j = i;
+            for (auto it2 = it; it2 != balls.end(); ++it2){
+                if (it != it2 and it->collides(*it2)){
+                    it->reflectCollision(*it2, prev_pos[i], prev_pos[j]);
                 }
+                j++;
             }
+            i++;
         }
-        for (int i = 0; i < balls.size(); i++){
-            int out = balls[i].outOfTable(HEIGHT/2 - cloth_height/2+50,HEIGHT/2 + cloth_height/2-50,
+        i = 0;
+        for (it = balls.begin(); it != balls.end(); it++){
+            int out = it->outOfTable(HEIGHT/2 - cloth_height/2+50,HEIGHT/2 + cloth_height/2-50,
                                           WIDTH/2 - cloth_width/2+50,WIDTH/2 + cloth_width/2-50);
             if (out != -1) {
                 sf::Vector2f n;
@@ -113,11 +139,21 @@ int main(){
                 } else if(out == 2 or out == 3){
                     n = sf::Vector2f(1,0);
                 }
-                balls[i].reflect_update(n, prev_pos[i]);
+                it->reflect_update(n, prev_pos[i]);
             }
-        }
+            i++; 
+        }    
 
-        // end the current frame
-        window.display();
+        // Check for balls entering the holes
+        for (it = balls.begin(); it != balls.end(); ++it){
+            if (pool_table.entered_hole(it->getPos(), it->getRadius())){
+                if (++it == balls.end()){
+                    balls.back().setPos(1300, 650-rad);
+                    balls.back().setVel(0,0);
+                } else {
+                    balls.erase(--it);
+                }
+            }
+        }      
     }
 }

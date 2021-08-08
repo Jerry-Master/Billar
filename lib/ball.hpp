@@ -8,11 +8,14 @@ class Ball {
         sf::Vector2f pos;
         sf::Vector2f vel;
         sf::Vector2f acc;
+        sf::Texture* texture;
+        bool has_texture = false;
 
     public:
         Ball();
         Ball(double radius, double pos_x, double pos_y);
         Ball(double radius, sf::Vector2f pos);
+        void addTexture(sf::Texture* texture_);
 
         void draw(sf::RenderWindow& window);
         // Update position based on acceleration, velocity and physics
@@ -20,9 +23,11 @@ class Ball {
 
         sf::Vector2f getVel();
         void setVel(sf::Vector2f vel);
+        void setVel(double x, double y);
         // Get position of the center of the ball
         sf::Vector2f getPos();
         void setPos(sf::Vector2f pos_);
+        void setPos(double x, double y);
         double getRadius();
 
         // Checks if this collides with other

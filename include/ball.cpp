@@ -14,10 +14,15 @@ Ball::Ball(double radius_, sf::Vector2f pos_){
     radius = radius_;
     pos = pos_;
 }
+void Ball::addTexture(sf::Texture* texture_){
+    texture = texture_;
+    has_texture = true;
+}
 
 void Ball::draw(sf::RenderWindow& window){
     sf::CircleShape circle(radius);
     circle.setPosition(pos);
+    if (has_texture) circle.setTexture(texture);
     window.draw(circle);
 }
 
@@ -35,12 +40,18 @@ sf::Vector2f Ball::getVel(){
 void Ball::setVel(sf::Vector2f vel_){
     vel = vel_;
 }
+void Ball::setVel(double x, double y){
+    vel = sf::Vector2f(x,y);
+}
 
 sf::Vector2f Ball::getPos(){
     return pos + sf::Vector2f(radius, radius);
 }
 void Ball::setPos(sf::Vector2f pos_){
     pos = pos_;
+}
+void Ball::setPos(double x, double y){
+    pos = sf::Vector2f(x, y);
 }
 
 double Ball::getRadius(){

@@ -1,6 +1,7 @@
 #pragma once
 #include <cmath>
 #include <SFML/Graphics.hpp>
+#include "utils.hpp"
 
 class CornerShape : public sf::Shape
 {
@@ -16,6 +17,8 @@ public :
     virtual std::size_t getPointCount() const;
 
     virtual sf::Vector2f getPoint(std::size_t index) const;
+
+    bool isInside(sf::Vector2f pos, double rad);
 
 private :
 

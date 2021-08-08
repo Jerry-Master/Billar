@@ -38,8 +38,7 @@ sf::Vector2f CornerShape::getPoint(std::size_t index) const
         radius = m_radius.x;
         double aux = 2 * m_radius.y * std::cos(pi-(m_angle1-m_angle0)/2);
         double rad_center = (aux + std::sqrt(aux*aux - 4*(m_radius.y*m_radius.y - m_radius.x*m_radius.x)))/2;
-        center2 = sf::Vector2f(rad_center, 
-                                0);
+        center2 = sf::Vector2f(rad_center, 0);
             
     } else if ((angle > beta2 and angle < (m_angle1-m_angle0)/2) or
                 (angle < 2*pi - beta2 and angle > 2*pi - (m_angle1-m_angle0)/2)){
@@ -52,4 +51,8 @@ sf::Vector2f CornerShape::getPoint(std::size_t index) const
     float y = std::sin(-angle) * radius;
 
     return sf::Vector2f(x, y) - center2;
+}
+
+bool CornerShape::isInside(sf::Vector2f pos, double rad){
+    return size(getPosition() - pos) < m_radius.x - m_radius.y - rad;
 }
