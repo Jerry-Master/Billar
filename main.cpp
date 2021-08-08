@@ -1,10 +1,7 @@
-#include <iostream>
 #include <SFML/Graphics.hpp>
 #include "table.hpp"
 #include "stick.hpp"
 #include "ball.hpp"
-#include "utils.hpp"
-#include <vector>
 using namespace std; 
 
 const int WIDTH = 2000;
@@ -93,33 +90,30 @@ int main(){
         }
         pool_table.draw(window);
         stick.draw(window);
-        vector<sf::Vector2f> prev_pos(22);
-        for (int i = 0; i < 22; i++){
+        vector<sf::Vector2f> prev_pos(balls.size());
+        for (int i = 0; i < balls.size(); i++){
             prev_pos[i] = balls[i].getPos();
             balls[i].update();
             balls[i].draw(window);
         }
-        for (int i = 0; i < 22; i++){
-            for (int j = 0; j < 22; j++){
-                if (i != j and balls[i].collides(balls[j])){
-                    sf::Vector2f p = prev_pos[i] - balls[j].getPos();
-                    sf::Vector2f n = sf::Vector2f(-p.y, p.x);
-                    balls[i].reflect(n, prev_pos[i]);
+        for (int i = 0; i < balls.size(); i++){
+            for (int j = i+1; j < balls.size(); j++){
+                if (balls[i].collides(balls[j])){
+                    balls[i].reflectCollision(balls[j], prev_pos[i], prev_pos[j]);
                 }
             }
         }
-        for (int i = 0; i < 22; i++){
+        for (int i = 0; i < balls.size(); i++){
             int out = balls[i].outOfTable(HEIGHT/2 - cloth_height/2+50,HEIGHT/2 + cloth_height/2-50,
                                           WIDTH/2 - cloth_width/2+50,WIDTH/2 + cloth_width/2-50);
             if (out != -1) {
-                if (i == 21) cout << "reflect" << endl;
                 sf::Vector2f n;
                 if (out == 0 or out == 1){
                     n = sf::Vector2f(0,1);
                 } else if(out == 2 or out == 3){
                     n = sf::Vector2f(1,0);
                 }
-                balls[i].reflect(n, prev_pos[i]);
+                balls[i].reflect_update(n, prev_pos[i]);
             }
         }
 

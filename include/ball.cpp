@@ -29,6 +29,9 @@ void Ball::update(){
     }
 }
 
+sf::Vector2f Ball::getVel(){
+    return vel;
+}
 void Ball::setVel(sf::Vector2f vel_){
     vel = vel_;
 }
@@ -36,14 +39,42 @@ void Ball::setVel(sf::Vector2f vel_){
 sf::Vector2f Ball::getPos(){
     return pos + sf::Vector2f(radius, radius);
 }
+void Ball::setPos(sf::Vector2f pos_){
+    pos = pos_;
+}
+
+double Ball::getRadius(){
+    return radius;
+}
 
 bool Ball::collides(Ball other){
     return (size(this->getPos() - other.getPos()) < 2*radius-0.1);
 }
-void Ball::reflect(sf::Vector2f n, sf::Vector2f prev_pos){
-    pos = prev_pos - sf::Vector2f(radius, radius);
-    vel = float(2 * scalar(n, vel) / (size(n)*size(n))) * n - vel;
+
+sf::Vector2f Ball::reflect(sf::Vector2f n, sf::Vector2f v){
+    return float(2 * scalar(n, v) / (size(n)*size(n))) * n - v;
 }
+
+void Ball::reflect_update(sf::Vector2f n, sf::Vector2f prev_pos){
+    pos = prev_pos - sf::Vector2f(radius, radius);
+    vel = reflect(n, vel);
+}
+
+void Ball::reflectCollision(Ball& other, sf::Vector2f prev_pos, sf::Vector2f prev_pos_other){
+    pos = prev_pos - sf::Vector2f(radius, radius);
+    other.setPos(prev_pos_other - sf::Vector2f(other.getRadius(), other.getRadius()));
+
+    sf::Vector2f dir = prev_pos - other.getPos();
+    sf::Vector2f v1 = vel;
+    sf::Vector2f v2 = other.getVel();
+
+    vector<sf::Vector2f> dec1 = decompose(v1, dir);
+    vector<sf::Vector2f> dec2 = decompose(v2, dir);
+
+    setVel(dec1[1]+dec2[0]);
+    other.setVel(dec2[1]+dec1[0]);
+}
+
 int Ball::outOfTable(double up, double down, double left, double right){
     if (pos.x < left) return 0;
     if (pos.x + 2*radius > right) return 1;

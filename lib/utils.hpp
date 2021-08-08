@@ -1,7 +1,11 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 #include <cmath>
+#include <iostream>
+#include <vector>
 using namespace std;
+
+const double EPS = 1e-6;
 
 inline sf::ConvexShape trapezium(const sf::Texture& texture_border, 
                          double border_width,
@@ -54,4 +58,19 @@ inline double size(sf::Vector2f v){
 }
 inline double scalar(sf::Vector2f v, sf::Vector2f w){
     return v.x*w.x + v.y*w.y;
+}
+inline bool sameDir(sf::Vector2f v, sf::Vector2f w){
+    v = resize(v, 1);
+    w = resize(w, 1);
+
+    double angle = acos(scalar(v,w));
+
+    return angle < EPS;
+}
+// Decompose v in directions w and perpendicular to w
+inline vector<sf::Vector2f> decompose(sf::Vector2f v, sf::Vector2f w){
+    w = resize(w, 1);
+    sf::Vector2f v1 = resize(w, scalar(v,w));
+    sf::Vector2f v2 = v - v1;
+    return {v1, v2};
 }
